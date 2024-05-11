@@ -1,0 +1,165 @@
+﻿@page "/counter"
+@rendermode InteractiveServer
+
+<PageTitle>Counter</PageTitle>
+
+<h1>Counter</h1>
+
+<p role="status">Current count: @currentCount</p>
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+
+@if (gameStatus == GameStatus.InProgress)
+{
+    <div class="game-container">
+        <p>Player: @currentPlayer</p>
+        <p>Game Status: In Progress</p>
+        <div class="board">
+            @for (int i = 0; i < boardSize; i++)
+            {
+                <div class="row">
+                    @for (int j = 0; j < boardSize; j++)
+                    {
+                        int index = i * boardSize + j;
+                        <div class="cell" @onclick="(() => MakeMove(i,j))">@board[index]</div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <p>Game Over</p>
+    <p>Winner: @winner</p>
+}
+
+@code {
+
+    private enum GameStatus
+    {
+        InProgress,
+        Finished
+    }
+
+    private string[] board;
+    private string currentPlayer;
+    private string winner;
+    private GameStatus gameStatus;
+    private int boardSize = 3; // Default board size
+
+
+    protected override void OnInitialized()
+    {
+        board = new string[boardSize * boardSize];
+        currentPlayer = "X";
+        gameStatus = GameStatus.InProgress;
+    }
+
+    public async Task MakeMove(int row, int col)
+    {
+        Console.WriteLine("MakeMove method called");
+        int index = row * boardSize + col;
+        if (board[index] == null)
+        {
+            board[index] = currentPlayer;
+            if (CheckWin(row, col))
+            {
+                winner = currentPlayer;
+                gameStatus = GameStatus.Finished;
+            }
+            else if (board.All(cell => cell != null))
+            {
+                winner = "Draw";
+                gameStatus = GameStatus.Finished;
+            }
+            else
+            {
+                currentPlayer = currentPlayer == "X" ? "O" : "X";
+            }
+            StateHasChanged();
+        }
+    }
+
+    private bool CheckWin(int row, int col)
+    {
+        // Check row
+        int count = 0;
+        for (int i = 0; i < boardSize; i++)
+        {
+            if (board[row * boardSize + i] == currentPlayer)
+                count++;
+        }
+        if (count == boardSize)
+            return true;
+
+        // Check column
+        count = 0;
+        for (int i = 0; i < boardSize; i++)
+        {
+            if (board[i * boardSize + col] == currentPlayer)
+                count++;
+        }
+        if (count == boardSize)
+            return true;
+
+        // Check diagonal from top-left to bottom-right
+        count = 0;
+        for (int i = 0; i < boardSize; i++)
+        {
+            if (board[i * boardSize + i] == currentPlayer)
+                count++;
+        }
+        if (count == boardSize)
+            return true;
+
+        // Check diagonal from top-right to bottom-left
+        count = 0;
+        for (int i = 0; i < boardSize; i++)
+        {
+            if (board[i * boardSize + (boardSize - 1 - i)] == currentPlayer)
+                count++;
+        }
+        if (count == boardSize)
+            return true;
+
+        return false;
+    }
+
+    private int currentCount = 0;
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+}
+
+<style>
+
+    .game-container {
+        text-align: center;
+    }
+
+    .board {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .row {
+        display: flex;
+    }
+
+    .cell {
+        width: 50px;
+        height: 50px;
+        border: 1px solid black;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 24px;
+        cursor: pointer;
+    }
+
+</style>

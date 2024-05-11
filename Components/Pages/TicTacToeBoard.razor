@@ -1,0 +1,49 @@
+﻿@rendermode InteractiveServer
+@inject IJSRuntime JSRuntime
+
+@if (!boardSizeSelected)
+{
+    <div>
+        <h3>Choose Board Size</h3>
+        <input type="number" @bind="selectedBoardSize" min="3" max="10" />
+        <button @onclick="InitializeGame">Start Game</button>
+    </div>
+}
+else
+{
+    if (!(gameStatus == GameStatus.Concluded))
+    {
+        <div class="game-container">
+            <p>Player: @currentPlayer</p>
+            <p>Game Status: @gameStatus.ToString()</p>
+            <div class="board">
+                @for (int i = 0; i < selectedBoardSize; i++)
+                {
+                    <div class="row">
+                        @for (int j = 0; j < selectedBoardSize; j++)
+                        {
+                            int row = i;
+                            int col = j;
+                            int index = i * selectedBoardSize + j;
+                            <div class="cell" @onclick="(() => MakeMove(row, col))">@board[index]</div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+   
+
+
+        <div>
+            <p>X Wins: @xWinsCount</p>
+            <p>O Wins: @oWinsCount</p>
+            @if (gameStatus == GameStatus.InProgress)
+            {
+            <button @onclick="AbandonGame">Abandon Game</button>
+            }
+            <button style="margin-left: 10px" @onclick="ResetGame" disabled="@(!(gameStatus == GameStatus.Concluded))">Reset Game</button>
+        </div>
+}
+
+
